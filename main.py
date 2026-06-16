@@ -1,6 +1,6 @@
 # AI 활용 자유 주제 파이썬 미니 프로젝트
-# 이름 또는 학번: 
-# 프로젝트 주제: 
+# 이름 또는 학번: 20915
+# 프로젝트 주제: 나의 예산과 맛 취향에 따른 맞춤형 디저트 추천 및 가상 주문 시뮬레이터
 
 # ============================================================
 # 사용 안내
@@ -23,11 +23,15 @@
 # 아래 예시는 "활동 추천 프로그램"입니다.
 # 자신의 주제에 맞게 data를 만드세요.
 #
-# 현재 열의 의미:
-# 0번 열: 활동 이름
-# 1번 열: 필요한 시간(분)
-# 2번 열: 추천 기분
-# 3번 열: 활동 유형
+# 
+# desserts = [
+    ["초코 마카롱", 2500, "달콤함", "인기 최고 디저트"],
+    ["딸기 조각케이크", 5500, "달콤함", "부드러운 생크림"],
+    ["레몬 타르트", 4000, "상큼함", "비타민 충전"],
+    ["블루베리 요거트", 3500, "상큼함", "시원하고 깔끔한 맛"],
+    ["치즈 나초", 3000, "짭짤함", "영화 볼 때 필수"],
+    ["소금빵", 2800, "짭짤함", "고소하고 담백함"]
+]
 # ------------------------------------------------------------
 
 activities = [
@@ -45,54 +49,102 @@ activities = [
 # ------------------------------------------------------------
 
 def show_intro():
-    """프로그램 제목과 안내를 출력한다."""
-    print("=" * 40)
-    print("AI 활용 자유 주제 파이썬 미니 프로젝트")
-    print("예시: 기분과 시간에 따른 활동 추천기")
-    print("=" * 40)
+    """프로그램 제목과 사용 안내를 출력한다."""
+    print("=" * 45)
+    print(" 🍰 맞춤형 디저트 추천 & 주문 프로그램 🍰 ")
+    print(" 여러분의 현재 예산과 입맛에 맞는 디저트를 찾아드립니다.")
+    print("=" * 45)
+    
+    
+
+
 
 
 def get_user_input():
-    """사용자에게 기분과 남은 시간을 입력받는다."""
-    mood = input("현재 기분을 입력하세요. 예: 피곤, 우울, 차분, 답답: ")
-    minutes = int(input("사용 가능한 시간을 분 단위로 입력하세요: "))
-    return mood, minutes
+    """사용자에게 현재 예산과 원하는 맛 취향을 입력받는다."""
+    budget = int(input("현재 가지고 있는 예산을 입력하세요(원): "))
+    taste = input("원하는 맛을 선택하세요 (달콤함 / 상큼함 / 짭짤함): ")
+    return budget, taste
+    
+    
+    
 
 
 def find_recommendations(data, mood, minutes):
-    """2차원 리스트를 반복하며 조건에 맞는 활동을 찾는다."""
-    results = []
+"""사용자에게 현재 예산과 원하는 맛 취향을 입력받는다."""
+    budget = int(input("현재 가지고 있는 예산을 입력하세요(원): "))
+    taste = input("원하는 맛을 선택하세요 (달콤함 / 상큼함 / 짭짤함): ")
+    return budget, taste
 
-    for row in data:
-        name = row[0]
-        required_minutes = row[1]
-        recommended_mood = row[2]
-        activity_type = row[3]
 
-        # 조건문: 사용자의 기분과 시간이 활동 조건에 맞는지 판단한다.
-        if recommended_mood == mood and required_minutes <= minutes:
-            results.append([name, required_minutes, activity_type])
+def find_recommendations(data, budget, taste):
+    """2차원 리스트를 반복하며 사용자의 예산 이하이고 맛이 일치하는 디저트를 찾는다."""
+    recommended_indices = []
+    print(f"\n--- [ {taste} ] 맛이 나면서 {budget}원 이하인 추천 메뉴 ---")
+    
+    # 반복문을 사용하여 2차원 리스트를 행 단위로 순회
+    for i in range(len(data)):
+        name = data[i][0]
+        price = data[i][1]
+        category = data[i][2]
+        feature = data[i][3]
+        
+        # 조건문: 맛이 일치하고 가격이 예산 내에 있는지 검사
+        if category == taste and price <= budget:
+            print(f"[{i}] {name} | 가격: {price}원 | 특징: {feature}")
+            recommended_indices.append(i) # 조건에 만족하는 데이터의 인덱스 번호 저장
+            
+    return recommended_indices
 
-    return results
 
 
 def print_result(results):
-    """추천 결과를 출력한다."""
-    print("\n[추천 결과]")
-
-    if len(results) == 0:
-        print("조건에 맞는 활동이 없습니다.")
-        print("시간을 늘리거나 다른 기분을 입력해 보세요.")
+    """추천 리스트 중에서 메뉴를 안전하게 입력받아 가상 주문 및 잔액 계산을 처리한다."""
+    # 예외 상황 처리: 추천된 번호 안에서만 올바르게 입력할 때까지 반복(while문)
+    while True:
+        choice = int(input("\n구매하고 싶은 메뉴의 번호[-]를 입력하세요: "))
+        if choice in valid_ids:
+            break
+        print("❌ 에러: 추천 메뉴판에 표시된 번호만 정확히 입력해 주세요.")
+        
+    count = int(input("구매하실 수량을 입력하세요: "))
+    
+    selected_name = data[choice][0]
+    selected_price = data[choice][1]
+    total_price = selected_price * count
+    
+    print("\n" + "-" * 30)
+    print(f"▶ 선택한 메뉴: {selected_name} ({count}개)")
+    print(f"▶ 총 주문 금액: {total_price}원")
+    print("-" * 30)
+    
+    # 조건문: 총 결제 금액과 보유한 예산 비교
+    if total_price > budget:
+        print("❌ 주문 실패: 잔액이 부족하여 결제할 수 없습니다.")
     else:
-        for item in results:
-            print(f"- {item[0]} / {item[1]}분 / 유형: {item[2]}")
+        balance = budget - total_price
+        print(f"✅ 주문 성공! 결제가 완료되었습니다.")
+        print(f"💰 구매 후 남은 잔액: {balance}원")
+
 
 
 def main():
     show_intro()
-    mood, minutes = get_user_input()
-    results = find_recommendations(activities, mood, minutes)
-    print_result(results)
+    
+    # 1. 사용자로부터 기본 데이터 입력 받기
+    my_budget, my_taste = get_user_input()
+    
+    # 2. 2차원 리스트 기반 매칭 아이템 탐색 및 출력
+    valid_menu_ids = find_recommendations(desserts, my_budget, my_taste)
+    
+    # 3. 예외 상황 처리: 만약 매칭되는 추천 결과가 하나도 없을 경우의 분기 제어
+    if len(valid_menu_ids) == 0:
+        print("아쉽게도 조건에 맞는 디저트가 매점에 없습니다.")
+        print("소지 금액을 높이거나 다른 종류의 맛을 선택해 보세요.")
+    else:
+        # 4. 추천 결과가 존재할 때만 주문 프로세스 가동
+        process_order(desserts, valid_menu_ids, my_budget)
+    
 
 
 # ------------------------------------------------------------
